@@ -1074,12 +1074,21 @@ class DiskBackedShardedEmbedding(nn.Module):
             runtime_prefix = (
                 "language_model.model." + runtime_prefix[len("model.language_model.") :]
             )
+        raw_prefix = prefix
+        if raw_prefix.startswith("model.language_model."):
+            raw_prefix = "model." + raw_prefix[len("model.language_model."):]
+        elif raw_prefix.startswith("language_model.model."):
+            raw_prefix = "model." + raw_prefix[len("language_model.model."):]
+        elif raw_prefix.startswith("language_model."):
+            raw_prefix = raw_prefix[len("language_model."):]
         for shard_index, shard_size in enumerate(self.shard_sizes):
             bases = (
                 f"{prefix}.shard_{shard_index}",
                 f"{prefix}.shards.{shard_index}",
                 f"{runtime_prefix}.shard_{shard_index}",
                 f"{runtime_prefix}.shards.{shard_index}",
+                f"{raw_prefix}.shard_{shard_index}",
+                f"{raw_prefix}.shards.{shard_index}",
             )
             base = next(
                 (
